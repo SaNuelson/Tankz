@@ -62,7 +62,7 @@ class Tank:
             self.cannon_offset = (0.5 * Config.cannon_w * math.cos(math.radians(-self.cannon_angle)),
                                   0.5 * Config.cannon_w * math.sin(math.radians(-self.cannon_angle)))
             self.tank_cannon = self.canvas.create_image(self.cannon_x, self.cannon_y, image=tank_cannon)
-            self.canvas.tag_lower(self.tank_cannon)
+            self.canvas.tag_raise(self.tank_base)
 
     def aim_plus(self):
         self.cannon_angle += self.cannon_speed

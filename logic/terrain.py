@@ -1,5 +1,4 @@
 import numpy as np
-from matplotlib import pyplot as plt
 
 
 def constant(w, h, x=None) -> np.ndarray:
@@ -10,8 +9,5 @@ def constant(w, h, x=None) -> np.ndarray:
     field[:x, :, 2] = 255
     field[x:h, :, 1] = 255
     field[:, :, 3] = 255
-
-    plt.imshow(field)
-    plt.show()
 
     return field
