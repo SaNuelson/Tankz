@@ -49,9 +49,13 @@ class Config:
     res_path_red_arrow_down = "./res/arrow_red_down.png"
     res_path_tank_base = "./res/tank_base.png"
     res_path_tank_cannon = "./res/tank_cannon.png"
+    res_path_skytex = "./res/skytex.png"
 
     min_player_count = 2
     max_player_count = 8
+
+    rgba_earth_top = [74, 86, 106, 255]
+    rgba_earth_bot = [41, 47, 56, 255]
 
     control_keysyms = {
         InputKey.UP: ['w', 'W', 'Up'],

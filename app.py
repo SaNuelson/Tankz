@@ -34,7 +34,7 @@ class App(tk.Tk):
         game_setup.pack_forget()
         self.frames[AppState.GAME_SETUP] = game_setup
 
-        game_play = GamePlay(self, Config.screen_w, Config.screen_h)
+        game_play = GamePlay(self)
         game_play.pack_forget()
         self.frames[AppState.GAME_PLAY] = game_play
 

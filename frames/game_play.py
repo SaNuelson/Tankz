@@ -1,28 +1,39 @@
+import random
 import tkinter as tk
 
 import numpy as np
 from PIL.Image import Image
 from matplotlib import pyplot as plt
 
+import utils
+from config import Config
 from logic import terrain
+from logic.player import Human
 from logic.tank import Tank, PlayerTank
 from utils import as_photo, as_image
 
 
 class GamePlay(tk.Frame):
-    def __init__(self, master, width, height):
+    def __init__(self, master, player_count=2):
         super().__init__(master)
 
-        self.canvas = tk.Canvas(width=width, height=height)
+        self.canvas = tk.Canvas(self, width=Config.screen_w, height=Config.screen_h)
         self.canvas.pack()
+        self.canvas.create_image(0, 0, image=utils.load_photo(Config.res_path_skytex, width=Config.screen_w), anchor="nw")
 
-        map_array = terrain.constant(width, height)
-        self.map_photo = as_photo(map_array)
-        self.map = self.canvas.create_image(100, 100, image=self.map_photo)
+        self.map_array = terrain.random_walk(Config.screen_w, Config.screen_h, step_func=lambda y, h, x, w: y + random.randint(-1, 1))
+        self.map_photo = as_photo(self.map_array)
+        self.map = self.canvas.create_image(0, 0, image=self.map_photo, anchor="nw")
 
-        self.tank = Tank(self.canvas)
-        self.tank2 = PlayerTank(self.canvas)
+        player_dist = Config.screen_w // (player_count + 1)
+        self.players = []
+        for i in range(player_count):
+            x = player_dist * (i + 1)
+            y = terrain.height_at(self.map_array, x)
+            tank = Tank(self, x, y)
+            player = Human(tank)
+            self.players.append(player)
+        self.active_player = 0
 
     def custom_update(self):
-        self.tank.custom_update()
-        self.tank2.custom_update()
+        self.players[self.active_player].make_turn()

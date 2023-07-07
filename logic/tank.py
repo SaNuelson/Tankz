@@ -5,6 +5,8 @@ from config import Config, InputKey
 import utils
 import tkinter as tk
 
+from frames.game_play import GamePlay
+from logic import terrain
 from logic.input import Input
 
 
@@ -40,8 +42,9 @@ class Tank:
     cannon_dirty: bool = True
     tank_dirty: bool = True
 
-    def __init__(self, canvas: tk.Canvas, x=100, y=100):
-        self.canvas = canvas
+    def __init__(self, game: GamePlay, x=100, y=100):
+        self.game = game
+        self.canvas = game.canvas
         self.pos = (x, y)
         self.cannon_offset = (0.5 * Config.cannon_w * math.cos(math.radians(-self.cannon_angle)),
                               0.5 * Config.cannon_w * math.sin(math.radians(-self.cannon_angle)))
@@ -73,14 +76,16 @@ class Tank:
         self.cannon_dirty = True
 
     def move_right(self):
-        # TODO: move over terrain + stop on slope
-        self.pos[0] += self.tank_speed
+        nx = self.pos_x + self.tank_speed
+        ny = terrain.height_at(self.game.map_array, nx)
+        self.pos = (nx, ny)
         self.tank_dirty = True
         self.cannon_dirty = True
 
     def move_left(self):
-        # TODO: move over terrain + stop on slope
-        self.pos[0] -= self.tank_speed
+        nx = self.pos_x - self.tank_speed
+        ny = terrain.height_at(self.game.map_array, nx)
+        self.pos = (nx, ny)
         self.tank_dirty = True
         self.cannon_dirty = True
 
