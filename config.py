@@ -57,6 +57,8 @@ class Config:
     rgba_earth_top = [74, 86, 106, 255]
     rgba_earth_bot = [41, 47, 56, 255]
 
+    phys_gravity = (0, 9.8)
+
     control_keysyms = {
         InputKey.UP: ['w', 'W', 'Up'],
         InputKey.DOWN: ['s', 'S', 'Down'],

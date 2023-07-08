@@ -9,7 +9,7 @@ import utils
 from config import Config
 from logic import terrain
 from logic.player import Human
-from logic.tank import Tank, PlayerTank
+from logic.tank import Tank
 from utils import as_photo, as_image
 
 
@@ -36,4 +36,7 @@ class GamePlay(tk.Frame):
         self.active_player = 0
 
     def custom_update(self):
-        self.players[self.active_player].make_turn()
+        for player in self.players:
+            player.custom_update()
+
+        self.players[self.active_player].start_turn()
