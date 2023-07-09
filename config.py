@@ -34,7 +34,7 @@ class Config:
 
     tank_w = 50
     cannon_w = 25
-    cannon_offset = (-3, -10)
+    cannon_offset = (8, -10)
 
     main_bg_color = "green"
 

@@ -30,5 +30,5 @@ class Menu(tk.Frame):
     def onQuit(self):
         self.master.setState(AppState.QUIT)
 
-    def custom_update(self):
+    def custom_update(self, delta: float):
         return

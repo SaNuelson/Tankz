@@ -1,4 +1,5 @@
 import math
+import os.path
 import tkinter as tk
 from typing import Literal, Tuple
 
@@ -8,27 +9,38 @@ from PIL import ImageTk
 from PIL import Image
 from functools import cache
 
+from logic.vector import Vector2
+
+
+def __force_cache(path: str, height: int | None = None, width: int | None = None):
+    for flip_h in [True, False]:
+        for flip_v in [True, False]:
+            for degree in range(360):
+                __load_image(path, height, width, flip_h, flip_v, degree)
+
 
 def load_image(path: str, height: int | None = None, width: int | None = None,
                flip_h: bool = False, flip_v: bool = False,
                rotate: int = 0, pivot: Tuple[int, int] | None = None) -> Image:
     """
-    Load an image from specified path and resize to specified size, if any.
+    Load an image from specified path and resize to specified _size, if any.
     Use cached image if available.
     If neither width nor height is provided, image is not resized.
     If either width or height is provided, the image is resized to specified dimension
     while scaling the other to keep aspect ratio.
-    If both width and height are provided, image is resized to specified size, aspect ratio is ignored.
+    If both width and height are provided, image is resized to specified _size, aspect ratio is ignored.
     :param path: Relative path to image
     :param height: Target height in pixels to resize to, or None.
     :param width: Target width in pixels to resize to, or None.
-    :param flip_h: Whether to flip image horizontally.
-    :param flip_v: Whether to flip image vertically.
+    :param flip_h: Whether to _flip image horizontally.
+    :param flip_v: Whether to _flip image vertically.
     :param rotate: What angle to rotate counter-clockwise by in degrees.
     :param pivot: Pivot point around which to rotate image in form of tuple (x,y)
     where (0,0) is the top left corner of image.
     :return: A PIL.Image loaded from specified path and processed according to args.
     """
+
+
 
     if rotate < 0:
         rotate = rotate + (360 * math.ceil(-rotate / 360))
@@ -42,8 +54,8 @@ def load_image(path: str, height: int | None = None, width: int | None = None,
 
 @cache
 def __load_image(path: str, height: int | None = None, width: int | None = None,
-               flip_h: bool = False, flip_v: bool = False,
-               rotate: int = 0, pivot: Tuple[int, int] | None = None) -> Image:
+                 flip_h: bool = False, flip_v: bool = False,
+                 rotate: int = 0, pivot: Tuple[int, int] | None = None) -> Image:
     assert rotate >= 0
     assert rotate < 360
     assert rotate % 1 == 0
@@ -57,6 +69,9 @@ def __load_image(path: str, height: int | None = None, width: int | None = None,
                 aspect = height / image.height
                 width = int(aspect * image.width)
             image = image.resize(size=(width, height))
+        else:
+            # lazy reading may cause image not being loaded, resizing forces it
+            image.load()
 
         if flip_h:
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
@@ -74,17 +89,17 @@ def load_photo(path: str, height: int | None = None, width: int | None = None,
                flip_h: bool = False, flip_v: bool = False,
                rotate: int = 0, pivot: Tuple[int, int] | None = None) -> tk.PhotoImage:
     """
-    Load an image as PhotoImage from specified path and resize to specified size, if any.
+    Load an image as PhotoImage from specified path and resize to specified _size, if any.
     Use cached image if available.
     If neither width nor height is provided, image is not resized.
     If either width or height is provided, the image is resized to specified dimension
     while scaling the other to keep aspect ratio.
-    If both width and height are provided, image is resized to specified size, aspect ratio is ignored.
+    If both width and height are provided, image is resized to specified _size, aspect ratio is ignored.
     :param path: Relative path to image
     :param height: Target height in pixels to resize to, or None.
     :param width: Target width in pixels to resize to, or None.
-    :param flip_h: Whether to flip image horizontally.
-    :param flip_v: Whether to flip image vertically.
+    :param flip_h: Whether to _flip image horizontally.
+    :param flip_v: Whether to _flip image vertically.
     :param rotate: What angle to rotate counter-clockwise by in degrees.
     :param pivot: Pivot point around which to rotate image in form of tuple (x,y)
     where (0,0) is the top left corner of image.
@@ -102,8 +117,8 @@ def load_photo(path: str, height: int | None = None, width: int | None = None,
 
 @cache
 def __load_photo(path: str, height: int | None = None, width: int | None = None,
-               flip_h: bool = False, flip_v: bool = False,
-               rotate: int = 0, pivot: Tuple[int, int] | None = None) -> tk.PhotoImage:
+                 flip_h: bool = False, flip_v: bool = False,
+                 rotate: int = 0, pivot: Tuple[int, int] | None = None) -> tk.PhotoImage:
     image = load_image(path, height, width, flip_h, flip_v, rotate, pivot)
     photo = ImageTk.PhotoImage(image)
     return photo
@@ -128,7 +143,7 @@ def as_image(image: np.ndarray, mode: Literal["L", "RGB", "RGBA"] = None) -> PIL
             return Image.fromarray(image.astype(np.uint8), mode="RGBA")
         else:
             raise ValueError(
-                f"Unexpected image of shape {image.shape}, should be either 2D, or 3D with last dim of size 3 or 4")
+                f"Unexpected image of shape {image.shape}, should be either 2D, or 3D with last dim of _size 3 or 4")
     else:
         return Image.fromarray(image.astype(np.uint8), mode=mode)
 
@@ -153,22 +168,20 @@ def as_photo(image: np.ndarray, mode: Literal["L", "RGB", "RGBA"] = None) -> tk.
             return ImageTk.PhotoImage(image=Image.fromarray(image.astype(np.uint8), mode="RGBA"))
         else:
             raise ValueError(
-                f"Unexpected image of shape {image.shape}, should be either 2D, or 3D with last dim of size 3 or 4")
+                f"Unexpected image of shape {image.shape}, should be either 2D, or 3D with last dim of _size 3 or 4")
     else:
         return ImageTk.PhotoImage(image=Image.fromarray(image.astype(np.uint8), mode=mode))
 
 
-def rotate_vec(vector: (float, float), angle: float) -> (float, float):
+def rotate_vec(vector: Vector2, angle: float) -> (float, float):
     """
     Rotate a vector clockwise by a specified angle in degrees
     :param vector: Tuple in form (x,y) specifying a vector
     :param angle: Angle in degrees by which to rotate the vector in clockwise direction.
     :return: Tuple in form (x,y) specifying a rotated vector
     """
-    x, y = vector
     radians = math.radians(angle)
-    xn = x * math.cos(radians) - y * math.sin(radians)
-    yn = x * math.sin(radians) + y * math.cos(radians)
-    return xn, yn
-
-
+    return Vector2(
+        vector.x * math.cos(radians) - vector.y * math.sin(radians),
+        vector.x * math.sin(radians) + vector.y * math.cos(radians)
+    )

@@ -1,3 +1,4 @@
+import time
 from enum import IntEnum
 
 import tkinter as tk
@@ -19,7 +20,7 @@ class App(tk.Tk):
         super().__init__()
         self.frames = {}
 
-        # set size, style, font
+        # set _size, style, font
         geometry_string = str(Config.screen_w) + "x" + str(Config.screen_h)
         self.geometry(geometry_string)
         self.configure(bg=Config.main_bg_color)
@@ -43,6 +44,7 @@ class App(tk.Tk):
 
         # start custom loop
         self.after(1, self.custom_update)
+        time.perf_counter()
 
     def setState(self, state: AppState):
         if not Config.state_transition(self.state, state):
@@ -61,6 +63,6 @@ class App(tk.Tk):
         self.state = state
 
     def custom_update(self):
-        self.frames[self.state].custom_update()
+        self.frames[self.state].custom_update(time.perf_counter())
 
         self.after(1, self.custom_update)
