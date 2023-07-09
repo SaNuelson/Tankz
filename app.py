@@ -19,7 +19,7 @@ class App(tk.Tk):
         super().__init__()
         self.frames = {}
 
-        # set size, style, font
+        # set _size, style, font
         geometry_string = str(Config.screen_w) + "x" + str(Config.screen_h)
         self.geometry(geometry_string)
         self.configure(bg=Config.main_bg_color)

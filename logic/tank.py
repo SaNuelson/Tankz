@@ -20,30 +20,30 @@ class Tank:
     tank_dirty: bool = True
     """Flag whether tank base needs re-rendering"""
     tank_base_id: int = None
-    """Canvas ID of tank base sprite."""
+    """Canvas ID of tank base _sprite."""
     tank_speed: int = 2
     """Speed of tank (in pixels per movement button press)"""
     prev_pos: Tuple[int, int]
-    """Previous position (used to compute delta)"""
+    """Previous _position (used to compute delta)"""
     pos: Tuple[int, int]
-    """Current position on canvas of tank (0,0) being the top left corner"""
+    """Current _position on _canvas of tank (0,0) being the top left corner"""
 
     @property
     def pos_x(self) -> int:
-        """ X position of the tank on the map. """
+        """ X _position of the tank on the map. """
         return self.pos[0]
 
     @property
     def pos_y(self) -> int:
-        """ Y position of the tank on the map. """
+        """ Y _position of the tank on the map. """
         return self.pos[1]
 
     cannon_dirty: bool = True
     """Flag specifying whether cannon needs to be re-rendered"""
     tank_cannon_id: int = None
-    """Canvas ID of tank cannon sprite."""
+    """Canvas ID of tank cannon _sprite."""
     cannon_offset: Tuple[int, int] = (0, 0)
-    """Vector to offset cannon sprite from base (i.e., vector from center of tank base to center of cannon)."""
+    """Vector to offset cannon _sprite from base (i.e., vector from center of tank base to center of cannon)."""
     cannon_angle: int = 0
     """Angle of the cannon in degrees, 0 being horizontally to the right."""
     cannon_speed: int = 1
@@ -51,12 +51,12 @@ class Tank:
 
     @property
     def cannon_x(self) -> int:
-        """ X position of the tank's cannon on the map. """
+        """ X _position of the tank's cannon on the map. """
         return self.pos[0] + Config.cannon_offset[0] + self.cannon_offset[0]
 
     @property
     def cannon_y(self) -> int:
-        """ Y position of the tank's cannon on the map. """
+        """ Y _position of the tank's cannon on the map. """
         return self.pos[1] + Config.cannon_offset[1] + self.cannon_offset[1]
 
     def __init__(self, game: GamePlay, x=100, y=100):
@@ -84,7 +84,7 @@ class Tank:
             self.place_base()
 
     def place_cannon(self):
-        # Delete old cannon, load new cannon and place it on canvas
+        # Delete old cannon, load new cannon and place it on _canvas
         assert self.canvas.find_withtag(self.tank_cannon_id) != ()
         self.canvas.delete(self.tank_cannon_id)
         self.cannon_angle %= 360
