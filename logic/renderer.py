@@ -9,13 +9,14 @@ from logic.vector import Vector2, PartialVector2
 class SpriteRenderer:
     # region dirty: bool = False { get; set_dirty }
     _dirty: bool = False
-    """Flag whether _sprite needs to be reloaded"""
 
     @property
     def dirty(self) -> bool:
+        """Flag whether sprite needs to be reloaded"""
         return self._dirty
 
     def set_dirty(self):
+        """Force renderer to refresh the sprite during next update"""
         self._dirty = True
 
     # endregion
@@ -25,7 +26,7 @@ class SpriteRenderer:
 
     @property
     def enabled(self) -> bool:
-        """Flag whether _sprite is drawn on _canvas"""
+        """Flag whether sprite is drawn on canvas"""
         return self._enabled
 
     @enabled.setter
@@ -100,17 +101,17 @@ class SpriteRenderer:
 
     # region position: Vector2 { get; set }
     _position: Vector2
-    """Position on _canvas"""
 
     @property
     def position(self) -> Vector2:
+        """Position of sprite on canvas, specifically its center"""
         return Vector2(self._position)
 
     @position.setter
     def position(self, value: Vector2):
         if self._position == value:
             return
-        self.position = value
+        self._position = value
         self.set_dirty()
 
     # endregion

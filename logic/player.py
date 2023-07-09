@@ -7,8 +7,8 @@ class Player:
     def __init__(self, tank: Tank):
         self.tank = tank
 
-    def custom_update(self):
-        self.tank.custom_update()
+    def custom_update(self, delta: float):
+        self.tank.custom_update(delta)
 
     def start_turn(self):
         pass

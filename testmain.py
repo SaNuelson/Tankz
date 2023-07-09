@@ -44,7 +44,7 @@ class App(tk.Tk):
     def custom_update(self):
         delta = time.perf_counter()
         for sprite in self.sprites:
-            sprite.rotation += 1
+            sprite.position += Vector2(1, 0)
             sprite.custom_update(delta)
 
         for debug in self.gizmos:

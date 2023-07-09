@@ -23,7 +23,7 @@ class GamePlay(tk.Frame):
 
         self.map_array = terrain.random_walk(Config.screen_w, Config.screen_h, step_func=lambda y, h, x, w: y + random.randint(-1, 1))
         self.map_photo = as_photo(self.map_array)
-        self.map = self.canvas.create_image(0, 0, image=self.map_photo, anchor="nw")
+        self.map_photo_id = self.canvas.create_image(0, 0, image=self.map_photo, anchor="nw")
 
         player_dist = Config.screen_w // (player_count + 1)
         self.players = []
@@ -35,8 +35,8 @@ class GamePlay(tk.Frame):
             self.players.append(player)
         self.active_player = 0
 
-    def custom_update(self):
+    def custom_update(self, delta: float):
         for player in self.players:
-            player.custom_update()
+            player.custom_update(delta)
 
         self.players[self.active_player].start_turn()
