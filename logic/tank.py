@@ -1,17 +1,10 @@
 from __future__ import annotations
 
-import math
-from typing import Tuple
+from typing import List, TYPE_CHECKING
 
-from config import Config, InputKey
-import utils
-import tkinter as tk
-
+from config import Config
 from logic import terrain
-from logic.input import Input
-
-from typing import TYPE_CHECKING
-
+from logic.projectile import Projectile
 from logic.renderer import SpriteRenderer
 from logic.vector import Vector2, PartialVector2
 
@@ -24,8 +17,9 @@ class Tank:
     """Speed of tank (in pixels per movement button press)"""
     cannon_speed: int = 1
     """Speed at which cannon turns (in degrees per button press)."""
+    projectile_speed: int = 100
 
-    # region pos: Vector2 { get; set }
+    # region _pos: Vector2 { get; set }
     _pos: Vector2
     """Position within the canvas"""
 
@@ -62,8 +56,10 @@ class Tank:
 
     tank_base: SpriteRenderer
     tank_cannon: SpriteRenderer
+    projectiles: List[Projectile]
 
     def __init__(self, game: GamePlay, x=100, y=100):
+        self.projectiles = []
         self.game = game
         self.canvas = game.canvas
         self._pos = Vector2(x, y)
@@ -82,6 +78,8 @@ class Tank:
     def custom_update(self, delta: float):
         self.tank_base.custom_update(delta)
         self.tank_cannon.custom_update(delta)
+        for proj in self.projectiles:
+            proj.custom_update(delta)
 
     def aim_plus(self):
         self.cannon_angle += self.cannon_speed
@@ -98,3 +96,7 @@ class Tank:
         nx = self.pos.x - self.tank_speed
         ny = terrain.height_at(self.game.map_array, int(nx))
         self.pos = Vector2(nx, ny)
+
+    def fire(self):
+        force = Vector2(self.projectile_speed, 0).rotated(-self.cannon_angle)
+        self.projectiles.append(Projectile(self.game, self.pos, force))

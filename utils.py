@@ -1,15 +1,16 @@
 import math
-import os.path
 import tkinter as tk
-from typing import Literal, Tuple
+from functools import cache
+from typing import Literal, Tuple, TypeVar
 
 import PIL.Image
 import numpy as np
-from PIL import ImageTk
 from PIL import Image
-from functools import cache
+from PIL import ImageTk
 
 from logic.vector import Vector2
+
+C = TypeVar("C")
 
 
 def __force_cache(path: str, height: int | None = None, width: int | None = None):
@@ -185,3 +186,9 @@ def rotate_vec(vector: Vector2, angle: float) -> (float, float):
         vector.x * math.cos(radians) - vector.y * math.sin(radians),
         vector.x * math.sin(radians) + vector.y * math.cos(radians)
     )
+
+
+def clamp(value: C, bot: C, top: C) -> C:
+    if bot > top:
+        return clamp(value, top, bot)
+    return min(top, max(bot, value))

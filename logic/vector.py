@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 
 
-
 class Vector2:
     x: float
     """X coordinate of the vector"""
@@ -80,6 +79,10 @@ class Vector2:
             return None
         return self / self.magnitude
 
+    @property
+    def area(self) -> float:
+        return self.x * self.y
+
     def rotated(self, degrees: float) -> Vector2:
         radians = math.radians(degrees)
         return Vector2(
@@ -90,6 +93,7 @@ class Vector2:
     def __repr__(self):
         return f"Vector2({self.x},{self.y})"
 
+
 class PartialVector2(Vector2):
     x: float | None
     """X coordinate of the vector"""
@@ -97,7 +101,7 @@ class PartialVector2(Vector2):
     y: float | None
     """Y coordinate of the vector"""
 
-    def __init__(self, x: float | None = 0, y: float | None = 0):
+    def __init__(self, x: float | Vector2 | None = 0, y: float | None = 0):
         super().__init__(x, y)
 
     def __neg__(self):

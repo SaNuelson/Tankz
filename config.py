@@ -1,5 +1,7 @@
 from enum import Enum, IntEnum
 
+from logic.vector import Vector2
+
 
 class String(Enum):
     Start = 1
@@ -20,9 +22,12 @@ class InputKey(Enum):
     DOWN = 'Down'
     LEFT = 'Left'
     RIGHT = 'Right'
+    SELECT = 'Select'
 
 
 class Config:
+    debug_mode = True
+
     screen_w = 800
     screen_h = 600
 
@@ -34,6 +39,7 @@ class Config:
 
     tank_w = 50
     cannon_w = 25
+    ball_w = 10
     cannon_offset = (8, -10)
 
     main_bg_color = "green"
@@ -50,6 +56,8 @@ class Config:
     res_path_tank_base = "./res/tank_base.png"
     res_path_tank_cannon = "./res/tank_cannon.png"
     res_path_skytex = "./res/skytex.png"
+    res_path_ball = "./res/ball.png"
+    res_path_fire_particle = "./res/fire_particle.png"
 
     min_player_count = 2
     max_player_count = 8
@@ -57,13 +65,19 @@ class Config:
     rgba_earth_top = [74, 86, 106, 255]
     rgba_earth_bot = [41, 47, 56, 255]
 
-    phys_gravity = (0, 9.8)
+    pixels_per_meter = 8.0
+    phys_gravity = Vector2(0, 9.8)
+    air_density = 1.293  # kg/m^3
+    cannonball_k = 0.00001
+
+    gizmo_color = "red"
 
     control_keysyms = {
         InputKey.UP: ['w', 'W', 'Up'],
         InputKey.DOWN: ['s', 'S', 'Down'],
         InputKey.LEFT: ['a', 'A', 'Left'],
-        InputKey.RIGHT: ['d', 'D', 'Right']
+        InputKey.RIGHT: ['d', 'D', 'Right'],
+        InputKey.SELECT: ['space', 'Enter', 'Return']
     }
 
     __state_transitions_matrix = [

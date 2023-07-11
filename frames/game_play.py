@@ -1,16 +1,12 @@
 import random
 import tkinter as tk
 
-import numpy as np
-from PIL.Image import Image
-from matplotlib import pyplot as plt
-
 import utils
 from config import Config
 from logic import terrain
 from logic.player import Human
 from logic.tank import Tank
-from utils import as_photo, as_image
+from utils import as_photo
 
 
 class GamePlay(tk.Frame):
@@ -31,7 +27,7 @@ class GamePlay(tk.Frame):
             x = player_dist * (i + 1)
             y = terrain.height_at(self.map_array, x)
             tank = Tank(self, x, y)
-            player = Human(tank)
+            player = Human(self, tank)
             self.players.append(player)
         self.active_player = 0
 

@@ -1,10 +1,18 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from config import InputKey
 from logic.input import Input
 from logic.tank import Tank
 
+if TYPE_CHECKING:
+    from frames.game_play import GamePlay
+
 
 class Player:
-    def __init__(self, tank: Tank):
+    def __init__(self, game: GamePlay, tank: Tank):
+        self.game = game
         self.tank = tank
 
     def custom_update(self, delta: float):
@@ -18,9 +26,6 @@ class Human(Player):
 
     connected: bool = False
 
-    def __init__(self, tank: Tank):
-        super().__init__(tank)
-
     def start_turn(self):
         if not self.connected:
             print("Player input connected")
@@ -28,6 +33,7 @@ class Human(Player):
             Input.key_down[InputKey.UP].append(self.tank.aim_plus)
             Input.key_down[InputKey.LEFT].append(self.tank.move_left)
             Input.key_down[InputKey.RIGHT].append(self.tank.move_right)
+            Input.key_down[InputKey.SELECT].append(self.tank.fire)
             self.connected = True
 
     def end_turn(self):
@@ -37,9 +43,9 @@ class Human(Player):
             Input.key_down[InputKey.UP].remove(self.tank.aim_plus)
             Input.key_down[InputKey.LEFT].remove(self.tank.move_left)
             Input.key_down[InputKey.RIGHT].remove(self.tank.move_right)
+            Input.key_down[InputKey.SELECT].remove(self.tank.fire)
             self.connected = False
 
 
 class NPC(Player):
-    def __init__(self, tank: Tank):
-        super().__init__(tank)
+    pass

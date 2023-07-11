@@ -1,9 +1,17 @@
-import tkinter as tk
-from typing import Tuple
+from __future__ import annotations
 
-import toolkit.canvas
+import tkinter as tk
+from enum import Enum
+from typing import Tuple, Callable
+
 import utils
 from logic.vector import Vector2, PartialVector2
+
+
+class SpriteDrawMode(Enum):
+    FROM_FILE = 1
+    DIRECT = 2
+    CALLBACK = 3
 
 
 class SpriteRenderer:
@@ -12,11 +20,11 @@ class SpriteRenderer:
 
     @property
     def dirty(self) -> bool:
-        """Flag whether sprite needs to be reloaded"""
+        """Flag whether gizmo needs to be reloaded"""
         return self._dirty
 
     def set_dirty(self):
-        """Force renderer to refresh the sprite during next update"""
+        """Force renderer to refresh the gizmo during next update"""
         self._dirty = True
 
     # endregion
@@ -26,7 +34,7 @@ class SpriteRenderer:
 
     @property
     def enabled(self) -> bool:
-        """Flag whether sprite is drawn on canvas"""
+        """Flag whether gizmo is drawn on canvas"""
         return self._enabled
 
     @enabled.setter
@@ -60,9 +68,12 @@ class SpriteRenderer:
 
     # endregion
 
-    # region sprite_path: str (PathLike) { get; set }
-    _sprite_path: str = None
-    """Path in project to the _sprite to be loaded"""
+    # region sprite_path: str | Callable[[SpriteRenderer], int] (PathLike) { get; set }
+    _sprite_path: str | Callable[[SpriteRenderer], int] = None
+    """
+    Path in project to the _sprite to be loaded. 
+    Alternatively, callable that creates an image and returns its canvas ID.
+    """
 
     @property
     def sprite_path(self) -> str:
@@ -79,7 +90,7 @@ class SpriteRenderer:
 
     # endregion
 
-    # region sprite: tk.PhotoImage { get; private set (via sprite_path) }
+    # region gizmo: tk.PhotoImage { get; private set (via sprite_path) }
     _sprite: tk.PhotoImage = None
     """Sprite drawn onto _canvas"""
 
@@ -104,7 +115,7 @@ class SpriteRenderer:
 
     @property
     def position(self) -> Vector2:
-        """Position of sprite on canvas, specifically its center"""
+        """Position of gizmo on canvas, specifically its center"""
         return Vector2(self._position)
 
     @position.setter
@@ -120,8 +131,9 @@ class SpriteRenderer:
     _anchor: Vector2
     """Vector specifying pivot point of _sprite, (0,0) being top-left corner and (1,1) being bottom-right corner"""
     _anchor_position: Vector2 = Vector2(0, 0)
-    """Offset in pixels from the center of sprite to the anchor"""
-    # When sprite rotates/scales, center stays the same, so it serves well as reference point.
+    """Offset in pixels from the center of gizmo to the anchor"""
+
+    # When gizmo rotates/scales, center stays the same, so it serves well as reference point.
     # New anchor needs to be where old anchor was
     # New anchor == center + rotated/scaled offset
     # Old anchor == old center + old offset
@@ -190,9 +202,11 @@ class SpriteRenderer:
 
     # endregion
 
+    _draw_mode: SpriteDrawMode
+
     def __init__(self,
                  canvas: tk.Canvas,
-                 sprite_path: str,
+                 sprite_path: str | tk.PhotoImage | Callable[[SpriteRenderer], int],
                  position: Vector2 = Vector2(0, 0),
                  rotation: float = 0,
                  size: PartialVector2 = PartialVector2(None, None),
@@ -200,13 +214,21 @@ class SpriteRenderer:
                  anchor: Vector2 = Vector2(0.5, 0.5)):
         self._canvas = canvas
 
-        self._sprite_path = sprite_path
-
         self._position = position
         self._rotation = rotation
         self._size = Vector2(0, 0)
         self._flip = flip
         self._anchor = anchor
+
+        if isinstance(sprite_path, str):
+            self._draw_mode = SpriteDrawMode.FROM_FILE
+            self._sprite_path = sprite_path
+        elif isinstance(sprite_path, Callable):
+            self._draw_mode = SpriteDrawMode.CALLBACK
+            self._sprite_path = sprite_path
+        else:
+            self._draw_mode = SpriteDrawMode.DIRECT
+            self._sprite = sprite_path
 
         self.__load_sprite(size)
         self._dirty = True
@@ -228,22 +250,33 @@ class SpriteRenderer:
             if self._sprite_id is not None and self._canvas.find_withtag(self._sprite_id):
                 self._canvas.delete(self._sprite_id)
 
-            delta = self._anchor_position - (Vector2(0.5, 0.5) - self.anchor) * self.size
-
             self.__load_sprite()
+
+    def __load_sprite(self, override_size: PartialVector2 | None = None):
+        if self._draw_mode == SpriteDrawMode.DIRECT:
+            return
+
+        width = override_size.x if override_size is not None else self._size.x if self._size is not None else None
+        height = override_size.y if override_size is not None else self._size.y if self._size is not None else None
+
+        if self._draw_mode == SpriteDrawMode.CALLBACK:
+            self._sprite_id = self._sprite_path(self)
+            assert self.size is not None, "SpriteRenderer onSpriteDrawn callback must set renderer.size"
+            print("SpriteRenderer.__load_sprite _size set via callable to", self._size)
+        else:
+            self._sprite = utils.load_photo(self._sprite_path,
+                                            int(height) if height is not None else None,
+                                            int(width) if width is not None else None,
+                                            self._flip[0] if self._flip is not None else False,
+                                            self._flip[1] if self._flip is not None else False,
+                                            int(self._rotation) if self._rotation is not None else 0)
+            delta = self._anchor_position - (Vector2(0.5, 0.5) - self.anchor) * self.size
             self._sprite_id = self._canvas.create_image(self._position.x + delta.x,
                                                         self._position.y + delta.y,
                                                         image=self._sprite)
+            if override_size is not None:
+                self._size = Vector2(self._sprite.width(), self._sprite.height())
+                print("SpriteRenderer.__load_sprite _size deduced to", self._size)
 
-    def __load_sprite(self, override_size: PartialVector2 | None = None):
-        width = override_size.x if override_size is not None else self._size.x if self._size is not None else None
-        height = override_size.y if override_size is not None else self._size.y if self._size is not None else None
-        self._sprite = utils.load_photo(self._sprite_path,
-                                        int(height) if height is not None else None,
-                                        int(width) if width is not None else None,
-                                        self._flip[0] if self._flip is not None else False,
-                                        self._flip[1] if self._flip is not None else False,
-                                        int(self._rotation) if self._rotation is not None else 0)
-        if override_size is not None:
-            self._size = Vector2(self._sprite.width(), self._sprite.height())
-            print("SpriteRenderer.__load_sprite _size deduced to", self._size)
+    def abs_pos(self, rel_point: Vector2):
+        return self.position + (rel_point - Vector2(0.5, 0.5)) * utils.rotate_vec(self.size / 2, -self.rotation)

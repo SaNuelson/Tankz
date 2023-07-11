@@ -1,13 +1,11 @@
 import time
-from enum import IntEnum
-
 import tkinter as tk
 from typing import Dict
 
+from config import Config, AppState
 from frames.game_play import GamePlay
 from frames.game_setup import GameSetup
 from frames.menu import Menu
-from config import Config, AppState
 from logic.input import Input
 
 
@@ -44,7 +42,7 @@ class App(tk.Tk):
 
         # start custom loop
         self.after(1, self.custom_update)
-        time.perf_counter()
+        self.last_time = time.perf_counter()
 
     def setState(self, state: AppState):
         if not Config.state_transition(self.state, state):
@@ -63,6 +61,8 @@ class App(tk.Tk):
         self.state = state
 
     def custom_update(self):
-        self.frames[self.state].custom_update(time.perf_counter())
+        next_time = time.perf_counter()
+        self.frames[self.state].custom_update(next_time - self.last_time)
+        self.last_time = next_time
 
         self.after(1, self.custom_update)
