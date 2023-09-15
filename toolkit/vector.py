@@ -62,10 +62,10 @@ class Vector2:
         return self.x >= other.x and self.y >= other.y
 
     def __lt__(self, other: Vector2):
-        return other.__gt__(self)
+        return self.x < other.x and self.y < other.y
 
     def __le__(self, other: Vector2):
-        return other.__ge__(self)
+        return self.x <= other.x and self.y <= other.y
 
     @property
     def magnitude(self) -> float:

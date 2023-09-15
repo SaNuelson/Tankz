@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tkinter as tk
 from typing import TYPE_CHECKING
 
 from config import InputKey
@@ -14,6 +15,7 @@ class Player:
     def __init__(self, game: GamePlay, tank: Tank):
         self.game = game
         self.tank = tank
+        self.health = tk.IntVar(game, value=100)
 
     def custom_update(self, delta: float):
         self.tank.custom_update(delta)

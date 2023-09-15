@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 from config import Config
+from game_components.collider import RectCollider
 from game_components.projectile import Projectile
 from game_components.renderer import SpriteRenderer
 from logic import terrain
@@ -33,7 +34,8 @@ class Tank:
             return
         self._pos = value
         self.tank_base.position = self._pos
-        self.tank_cannon.position = self._pos + Vector2(Config.cannon_offset[0], Config.cannon_offset[1])
+        self.tank_collider.position = self.tank_base.abs_pos()
+        self.tank_cannon.position = self.tank_base.abs_pos(Vector2(0.5, 0.1))
 
     # endregion
 
@@ -56,6 +58,7 @@ class Tank:
 
     tank_base: SpriteRenderer
     tank_cannon: SpriteRenderer
+    tank_collider: RectCollider
     projectiles: List[Projectile]
 
     def __init__(self, game: GamePlay, x=100, y=100):
@@ -70,16 +73,19 @@ class Tank:
                                         size=PartialVector2(Config.tank_w, None),
                                         anchor=Vector2(0.5, 1))
 
-        cannon_origin = self.tank_base.abs_pos(Vector2(0.5, 0.1))
+        cannon_origin = self.tank_base.abs_pos(Vector2(0.4, 0.1))
         self.tank_cannon = SpriteRenderer(self.canvas,
                                           Config.res_path_tank_cannon,
                                           position=cannon_origin,
                                           size=PartialVector2(Config.cannon_w, None),
                                           anchor=Vector2(0, 0.5))
 
+        self.tank_collider = RectCollider(game, self.tank_base.abs_pos(), self.tank_base.size)
+
     def custom_update(self, delta: float):
         self.tank_base.custom_update(delta)
         self.tank_cannon.custom_update(delta)
+        self.tank_collider.custom_update(delta)
         for proj in self.projectiles:
             proj.custom_update(delta)
 

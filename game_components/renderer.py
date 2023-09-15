@@ -41,10 +41,11 @@ class SpriteRenderer:
 
     @enabled.setter
     def enabled(self, value: bool):
-        if self.enabled == value:
+        if self._enabled == value:
             return
-        self.enabled = value
-        if self.enabled:
+
+        self._enabled = value
+        if self._enabled:
             self.enable()
         else:
             self.disable()
@@ -63,15 +64,16 @@ class SpriteRenderer:
     def canvas(self, value: tk.Canvas):
         if self._canvas == value:
             return
-        if self._sprite_id is not None and self._canvas.find_withtag(self._sprite_id):
-            self._canvas.delete(self._sprite_id)
+        if len(self._sprite_ids) > 0:
+            for sprite_id in self.sprite_ids:
+                self._canvas.delete(sprite_id)
         self._canvas = value
         self.set_dirty()
 
     # endregion
 
-    # region sprite_path: str | Callable[[SpriteRenderer], int] (PathLike) { get; set }
-    _sprite_path: str | Callable[[SpriteRenderer], int] = None
+    # region sprite_path: str | Callable[[SpriteRenderer, List[int]], List[int]] (PathLike) { get; set }
+    _sprite_path: str | Callable[[SpriteRenderer, List[int]], List[int]] = None
     """
     Path in project to the _sprite to be loaded. 
     Alternatively, callable that creates an image and returns its canvas ID.
@@ -102,13 +104,13 @@ class SpriteRenderer:
 
     # endregion
 
-    # region sprite_id: int | None { get; private set (via sprite_path) }
-    _sprite_id: int | None = None
+    # region sprite_ids: int | None { get; private set (via sprite_path) }
+    _sprite_ids: List[int] = []
     """ID of _sprite on _canvas"""
 
     @property
-    def sprite_id(self) -> int | None:
-        return self._sprite_id
+    def sprite_ids(self) -> List[int] | None:
+        return self._sprite_ids
 
     # endregion
 
@@ -210,7 +212,7 @@ class SpriteRenderer:
 
     def __init__(self,
                  canvas: tk.Canvas,
-                 sprite_path: str | tk.PhotoImage | Callable[[SpriteRenderer], int],
+                 sprite_path: str | tk.PhotoImage | Callable[[SpriteRenderer, List[int]], List[int]],
                  position: Vector2 = Vector2(0, 0),
                  rotation: float = 0,
                  size: PartialVector2 = PartialVector2(None, None),
@@ -237,6 +239,9 @@ class SpriteRenderer:
         self.__load_sprite(size)
         self._dirty = True
 
+    def __del__(self):
+        self.disable()
+
     @property
     def box(self):
         box_width = self.sprite.width()
@@ -247,14 +252,22 @@ class SpriteRenderer:
         self.enabled = True
 
     def disable(self):
+        print("Disable sprite cleanup...")
+        if len(self._sprite_ids) > 0:
+            for sprite_id in self.sprite_ids:
+                self._canvas.delete(sprite_id)
         self.enabled = False
 
     def custom_update(self, delta: float):
+        if not self.enabled:
+            return
+
         if self._dirty:
             self._dirty = False
 
-            if self._sprite_id is not None and self._canvas.find_withtag(self._sprite_id):
-                self._canvas.delete(self._sprite_id)
+            if len(self._sprite_ids) > 0:
+                for sprite_id in self.sprite_ids:
+                    self._canvas.delete(sprite_id)
 
             self.__load_sprite()
 
@@ -263,15 +276,15 @@ class SpriteRenderer:
                 self.canvas.delete(gizmo)
             self._debug_gizmo_ids = []
         if config.Config.debug_mode:
+            topleft = self.abs_pos()
             self._debug_gizmo_ids = [
-                *toolkit.canvas.draw_x(self.canvas, self.position, 5, "red", width=3),
-                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(0, 0)), 3, "orange", width=3),
-                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(1, 0)), 3, "yellow", width=3),
-                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(0, 1)), 3, "green", width=3),
-                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(1, 1)), 3, "blue", width=3)
+                *toolkit.canvas.draw_x(self.canvas, self.position, 5, "red", width=2),
+                *toolkit.canvas.draw_x(self.canvas, topleft, 3, "orange", width=2),
+                self.canvas.create_line(self.position.x, self.position.y, topleft.x, topleft.y, fill="orange")
             ]
 
     def __load_sprite(self, override_size: PartialVector2 | None = None):
+
         if self._draw_mode == SpriteDrawMode.DIRECT:
             return
 
@@ -279,9 +292,8 @@ class SpriteRenderer:
         height = override_size.y if override_size is not None else self._size.y if self._size is not None else None
 
         if self._draw_mode == SpriteDrawMode.CALLBACK:
-            self._sprite_id = self._sprite_path(self)
+            self._sprite_ids = self._sprite_path(self, self._sprite_ids)
             assert self.size is not None, "SpriteRenderer onSpriteDrawn callback must set renderer.size"
-            print("SpriteRenderer.__load_sprite _size set via callable to", self._size)
         else:
             self._sprite = utils.load_photo(self._sprite_path,
                                             int(height) if height is not None else None,
@@ -293,14 +305,21 @@ class SpriteRenderer:
             # cache center_offset and anchor_offset on self.rotation.setter
             center_offset = (self.size / 2).rotated(-self.rotation)
             anchor_offset = (self.size * self.anchor).rotated(-self.rotation)
-            self._sprite_id = self._canvas.create_image(self._position.x + center_offset.x - anchor_offset.x,
-                                                        self._position.y + center_offset.y - anchor_offset.y,
-                                                        image=self._sprite)
+            self._sprite_ids = [self._canvas.create_image(self._position.x + center_offset.x - anchor_offset.x,
+                                                          self._position.y + center_offset.y - anchor_offset.y,
+                                                          image=self._sprite)]
             if override_size is not None:
                 self._size = Vector2(self._sprite.width(), self._sprite.height())
                 print("SpriteRenderer.__load_sprite _size deduced to", self._size)
 
-    def abs_pos(self, rel_point: Vector2):
+    def abs_pos(self, rel_point: Vector2 = Vector2(0, 0)) -> Vector2:
+        """
+        Get coordinates of a local relative point in absolute space of canvas.
+        @param rel_point: Vector2 which specifies relative coordinates in sprite,
+        (0, 0) being the top left corner, (1, 1) being the bottom right corner.
+        Defaults to top left corner.
+        @return: Vector2 specifying coordinates for this point in canvas
+        """
         point_offset = (self.size * rel_point).rotated(-self.rotation)
         anchor_offset = (self.size * self.anchor).rotated(-self.rotation)
         return self._position - anchor_offset + point_offset

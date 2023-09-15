@@ -14,5 +14,21 @@ current state of game.)
 
 ## TODO
 
-- [antialiasing](https://stackoverflow.com/questions/14350645/is-there-an-antialiasing-method-for-python-pil)
-- 
+### Core functionality
+
+- [ ] colliders (tanks, projectiles, terrain)
+- [ ] damage system
+- [ ] turn switching
+- [ ] end game conditions & screen
+- [ ] setup screen
+
+### Ideal functionality
+
+- [ ] projectile explosions affecting terrain
+
+### Nice functionality
+
+- [ ] [antialiasing](https://stackoverflow.com/questions/14350645/is-there-an-antialiasing-method-for-python-pil)
+- [ ] projectile types
+- [ ] terrain physics
+- [ ] AI

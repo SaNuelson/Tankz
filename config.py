@@ -26,6 +26,15 @@ class InputKey(Enum):
     DEBUG = 'Debug'
 
 
+class Color(Enum):
+    RED = "#ed2543"
+    GREEN = "#1adf3f"
+    BLUE = "#402ae5"
+    CYAN = "#2ecca9"
+    MAGENTA = "#cc2a49"
+    MAGENTA_LIGHT = "#cc82ab"
+
+
 class Config:
     debug_mode = False
 
@@ -72,7 +81,8 @@ class Config:
     air_density = 1.293  # kg/m^3
     cannonball_k = 0.00001
 
-    gizmo_color = "red"
+    gizmo_color_primary = Color.MAGENTA.value
+    gizmo_color_secondary = Color.MAGENTA_LIGHT.value
 
     control_keysyms = {
         InputKey.UP: ['w', 'W', 'Up'],

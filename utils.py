@@ -129,6 +129,8 @@ def as_image(image: np.ndarray, mode: Literal["L", "RGB", "RGBA"] = None) -> PIL
     :param image: Ndarray to convert to image
     :param mode: One of 'L' (grayscale), 'RGB', 'RGBA'
     :return: tk.PhotoImage containing provided image as ndarray.
+
+    **Warning**: Make sure image object is saved in variable to avoid GC clean (and nothing showing up).
     """
     if mode is None:
         if image.ndim == 2:
@@ -153,8 +155,9 @@ def as_photo(image: np.ndarray, mode: Literal["L", "RGB", "RGBA"] = None) -> tk.
     :param image: Ndarray to convert to image
     :param mode: One of 'L' (grayscale), 'RGB', 'RGBA'
     :return: tk.PhotoImage containing provided image as ndarray.
-    """
 
+    **Warning**: Make sure photo object is saved in variable to avoid GC clean (and nothing showing up).
+    """
     if mode is None:
         if image.ndim == 2:
             print("to image gray")

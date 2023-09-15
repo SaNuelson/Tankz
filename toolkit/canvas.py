@@ -40,3 +40,20 @@ def draw_grid(canvas: tk.Canvas, size: Vector2, spacing: Vector2, color: str, **
         *[canvas.create_line(spacing.x * x, 0, spacing.x * x, size.y)
           for x in range(size.x // spacing.x)]
     ]
+
+
+def draw_xbox(canvas: tk.Canvas, point: Vector2, size: Vector2, color: str, **kwargs) -> List[int]:
+    point = point.as_int()
+    size = size.as_int()
+    top = point.y
+    bot = point.y + size.y
+    left = point.x
+    right = point.x + size.x
+    return [
+        canvas.create_line(left, top, right, top, fill=color, **kwargs),
+        canvas.create_line(right, top, right, bot, fill=color, **kwargs),
+        canvas.create_line(right, bot, left, bot, fill=color, **kwargs),
+        canvas.create_line(left, bot, left, top, fill=color, **kwargs),
+        canvas.create_line(left, top, right, bot, fill=color, **kwargs),
+        canvas.create_line(right, top, left, bot, fill=color, **kwargs)
+    ]
