@@ -1,8 +1,6 @@
 import tkinter as tk
-import utils
-from components.ImageButton import ImageButton
-from components.RangeSelector import RangeSelector
-from config import Config, String
+
+from tkinter_components.RangeSelector import RangeSelector
 
 
 class GameSetup(tk.Frame):

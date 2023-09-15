@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from config import Config
-from logic.collider import CircleCollider
-from logic.renderer import SpriteRenderer
-from logic.vector import Vector2, PartialVector2
+from game_components.collider import CircleCollider
+from game_components.renderer import SpriteRenderer
+from toolkit.vector import Vector2, PartialVector2
 
 if TYPE_CHECKING:
     from frames.game_play import GamePlay

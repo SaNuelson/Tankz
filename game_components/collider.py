@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 import utils
 from config import Config
-from logic.renderer import SpriteRenderer
-from logic.vector import Vector2, PartialVector2
+from game_components.renderer import SpriteRenderer
+from toolkit.vector import Vector2, PartialVector2
 
 if TYPE_CHECKING:
     from frames.game_play import GamePlay

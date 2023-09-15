@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 from config import Config
+from game_components.projectile import Projectile
+from game_components.renderer import SpriteRenderer
 from logic import terrain
-from logic.projectile import Projectile
-from logic.renderer import SpriteRenderer
-from logic.vector import Vector2, PartialVector2
+from toolkit.vector import Vector2, PartialVector2
 
 if TYPE_CHECKING:
     from frames.game_play import GamePlay
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class Tank:
     tank_speed: int = 2
     """Speed of tank (in pixels per movement button press)"""
-    cannon_speed: int = 1
+    cannon_speed: int = 3
     """Speed at which cannon turns (in degrees per button press)."""
     projectile_speed: int = 100
 
@@ -67,11 +67,13 @@ class Tank:
         self.tank_base = SpriteRenderer(self.canvas,
                                         Config.res_path_tank_base,
                                         position=self._pos,
-                                        size=PartialVector2(Config.tank_w, None))
+                                        size=PartialVector2(Config.tank_w, None),
+                                        anchor=Vector2(0.5, 1))
 
+        cannon_origin = self.tank_base.abs_pos(Vector2(0.5, 0.1))
         self.tank_cannon = SpriteRenderer(self.canvas,
                                           Config.res_path_tank_cannon,
-                                          position=self._pos + Vector2(Config.cannon_offset[0], Config.cannon_offset[1]),
+                                          position=cannon_origin,
                                           size=PartialVector2(Config.cannon_w, None),
                                           anchor=Vector2(0, 0.5))
 
@@ -98,5 +100,6 @@ class Tank:
         self.pos = Vector2(nx, ny)
 
     def fire(self):
+        origin_offset = self.tank_cannon.abs_pos(Vector2(1, 0.5))
         force = Vector2(self.projectile_speed, 0).rotated(-self.cannon_angle)
-        self.projectiles.append(Projectile(self.game, self.pos, force))
+        self.projectiles.append(Projectile(self.game, origin_offset, force))

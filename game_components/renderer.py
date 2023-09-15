@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import tkinter as tk
 from enum import Enum
-from typing import Tuple, Callable
+from typing import Tuple, Callable, List
 
+import config
+import toolkit.canvas
 import utils
-from logic.vector import Vector2, PartialVector2
+from toolkit.vector import Vector2, PartialVector2
 
 
 class SpriteDrawMode(Enum):
@@ -204,6 +206,8 @@ class SpriteRenderer:
 
     _draw_mode: SpriteDrawMode
 
+    _debug_gizmo_ids: List[int] = []
+
     def __init__(self,
                  canvas: tk.Canvas,
                  sprite_path: str | tk.PhotoImage | Callable[[SpriteRenderer], int],
@@ -233,6 +237,12 @@ class SpriteRenderer:
         self.__load_sprite(size)
         self._dirty = True
 
+    @property
+    def box(self):
+        box_width = self.sprite.width()
+        box_height = self.sprite.height()
+        return Vector2(self.abs_pos(Vector2(0, 0))), Vector2(box_width, box_height)
+
     def enable(self):
         self.enabled = True
 
@@ -243,14 +253,23 @@ class SpriteRenderer:
         if self._dirty:
             self._dirty = False
 
-            if self._anchor != Vector2(0.5, 0.5):
-                self._anchor_position = (Vector2(0.5, 0.5) - self.anchor) * self.size
-                self._anchor_position = utils.rotate_vec(self._anchor_position, -self.rotation)
-
             if self._sprite_id is not None and self._canvas.find_withtag(self._sprite_id):
                 self._canvas.delete(self._sprite_id)
 
             self.__load_sprite()
+
+        if len(self._debug_gizmo_ids) > 0:
+            for gizmo in self._debug_gizmo_ids:
+                self.canvas.delete(gizmo)
+            self._debug_gizmo_ids = []
+        if config.Config.debug_mode:
+            self._debug_gizmo_ids = [
+                *toolkit.canvas.draw_x(self.canvas, self.position, 5, "red", width=3),
+                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(0, 0)), 3, "orange", width=3),
+                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(1, 0)), 3, "yellow", width=3),
+                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(0, 1)), 3, "green", width=3),
+                *toolkit.canvas.draw_x(self.canvas, self.abs_pos(Vector2(1, 1)), 3, "blue", width=3)
+            ]
 
     def __load_sprite(self, override_size: PartialVector2 | None = None):
         if self._draw_mode == SpriteDrawMode.DIRECT:
@@ -270,13 +289,18 @@ class SpriteRenderer:
                                             self._flip[0] if self._flip is not None else False,
                                             self._flip[1] if self._flip is not None else False,
                                             int(self._rotation) if self._rotation is not None else 0)
-            delta = self._anchor_position - (Vector2(0.5, 0.5) - self.anchor) * self.size
-            self._sprite_id = self._canvas.create_image(self._position.x + delta.x,
-                                                        self._position.y + delta.y,
+
+            # cache center_offset and anchor_offset on self.rotation.setter
+            center_offset = (self.size / 2).rotated(-self.rotation)
+            anchor_offset = (self.size * self.anchor).rotated(-self.rotation)
+            self._sprite_id = self._canvas.create_image(self._position.x + center_offset.x - anchor_offset.x,
+                                                        self._position.y + center_offset.y - anchor_offset.y,
                                                         image=self._sprite)
             if override_size is not None:
                 self._size = Vector2(self._sprite.width(), self._sprite.height())
                 print("SpriteRenderer.__load_sprite _size deduced to", self._size)
 
     def abs_pos(self, rel_point: Vector2):
-        return self.position + (rel_point - Vector2(0.5, 0.5)) * utils.rotate_vec(self.size / 2, -self.rotation)
+        point_offset = (self.size * rel_point).rotated(-self.rotation)
+        anchor_offset = (self.size * self.anchor).rotated(-self.rotation)
+        return self._position - anchor_offset + point_offset

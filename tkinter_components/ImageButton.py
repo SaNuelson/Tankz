@@ -1,7 +1,5 @@
-from typing import Callable
-
-from PIL import Image, ImageTk
 import tkinter as tk
+from typing import Callable
 
 import utils
 from config import Config

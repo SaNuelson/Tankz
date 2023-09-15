@@ -1,8 +1,8 @@
 import tkinter as tk
 
 import utils
-from components.ImageButton import ImageButton
 from config import Config, AppState
+from tkinter_components.ImageButton import ImageButton
 
 
 class Menu(tk.Frame):

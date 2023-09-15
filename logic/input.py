@@ -1,8 +1,8 @@
 import tkinter as tk
 from typing import Dict
 
-from config import AppState, InputKey, Config
-from logic.event import Event
+from config import InputKey, Config
+from toolkit.event import Event
 
 
 class _Input:
@@ -13,11 +13,16 @@ class _Input:
     def __init__(self):
         self.app = None
         self.key_down = {}
-        i=0
         for key in list(InputKey):
             self.key_down[key] = Event()
             if self.debug:
-                self.key_down[key].append(lambda key=key: print("Pressed", key))
+                self.key_down[key].append(lambda k=key: print("Pressed", k))
+
+        def toggle_debug():
+            Config.debug_mode = not Config.debug_mode
+            print("Debug mode turned", "ON" if Config.debug_mode else "OFF")
+
+        self.key_down[InputKey.DEBUG].append(toggle_debug)
 
     def bind(self, app: tk.Misc):
         self.app = app

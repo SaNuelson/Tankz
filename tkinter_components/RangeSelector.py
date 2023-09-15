@@ -1,8 +1,8 @@
 import tkinter as tk
 from typing import List
 
-from components.ImageButton import ImageButton
 from config import Config
+from tkinter_components.ImageButton import ImageButton
 
 
 class RangeSelector(tk.Frame):

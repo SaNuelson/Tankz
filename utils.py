@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image
 from PIL import ImageTk
 
-from logic.vector import Vector2
+from toolkit.vector import Vector2
 
 C = TypeVar("C")
 
@@ -40,8 +40,6 @@ def load_image(path: str, height: int | None = None, width: int | None = None,
     where (0,0) is the top left corner of image.
     :return: A PIL.Image loaded from specified path and processed according to args.
     """
-
-
 
     if rotate < 0:
         rotate = rotate + (360 * math.ceil(-rotate / 360))

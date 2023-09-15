@@ -1,6 +1,6 @@
 from enum import Enum, IntEnum
 
-from logic.vector import Vector2
+from toolkit.vector import Vector2
 
 
 class String(Enum):
@@ -23,10 +23,11 @@ class InputKey(Enum):
     LEFT = 'Left'
     RIGHT = 'Right'
     SELECT = 'Select'
+    DEBUG = 'Debug'
 
 
 class Config:
-    debug_mode = True
+    debug_mode = False
 
     screen_w = 800
     screen_h = 600
@@ -46,6 +47,7 @@ class Config:
 
     default_font = "lucida 20 bold italic"
 
+    res_path_icon = "./res/icon.png"
     res_path_logo = "./res/logo.png"
     res_path_btn_idle = "./res/btn.png"
     res_path_btn_down = "./res/btn_down.png"
@@ -77,7 +79,8 @@ class Config:
         InputKey.DOWN: ['s', 'S', 'Down'],
         InputKey.LEFT: ['a', 'A', 'Left'],
         InputKey.RIGHT: ['d', 'D', 'Right'],
-        InputKey.SELECT: ['space', 'Enter', 'Return']
+        InputKey.SELECT: ['space', 'Enter', 'Return'],
+        InputKey.DEBUG: ['f3', 'F3']
     }
 
     __state_transitions_matrix = [
@@ -114,3 +117,4 @@ class Config:
         if lang not in Config.__lang_strings:
             lang = "en"
         return Config.__lang_strings[Config.locale][string]
+
